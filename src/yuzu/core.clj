@@ -2,7 +2,7 @@
                         [clojure-mail.core :refer :all]
                         [clojure-mail.message :as message]))
 
-(def credentials (map string/trim (string/split (string/trim-newline  (slurp "src/yuzu/credentials.secure")) #",")))
+(->> "src/yuzu/credentials.secure" slurp string/trim-newline (#(string/split % #",")) (map string/trim))
 
 
 (print credentials)
