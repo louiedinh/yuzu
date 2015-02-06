@@ -10,12 +10,25 @@
 
 (def raw-messages (inbox (apply gen-store credentials)))
 
-(def messages (map message/read-message (take 10 raw-messages)))
+;(def messages (map message/read-message (take 10 raw-messages)))
 
-(defn get-sender [message]
-  (.getAddress (:from message)))
+(defn get-sender [raw-message]
+  (-> raw-message .getSender .getAddress))
 
-(defn get-senders [msgs] (map get-sender msgs))
+(defn get-senders [msgs]
+  (let [batched-msgs (partition 100 msgs)]
+    (loop [unprocessed batched-msgs
+           senders []]
+      (if (empty? unprocessed)
+        'done
+        (do 
+          (print ".")
+          (recur (rest unprocessed)
+                 (concat (get-senders (first unprocessed)))))))))
+
+(loop [nums '(1 2 3)]
+  (print ".")
+  (recur (rest nums)))
 
 (defn senders-map [msgs]
   (reduce (fn [dict sender-addr]
