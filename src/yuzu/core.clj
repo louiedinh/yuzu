@@ -15,20 +15,18 @@
 (defn get-sender [raw-message]
   (-> raw-message .getSender .getAddress))
 
-(defn get-senders [msgs]
-  (let [batched-msgs (partition 100 msgs)]
-    (loop [unprocessed batched-msgs
-           senders []]
-      (if (empty? unprocessed)
-        'done
-        (do 
-          (print ".")
-          (recur (rest unprocessed)
-                 (concat (get-senders (first unprocessed)))))))))
+(defn get-subject [raw-message]
+  (.getSubject raw-message))
 
-(loop [nums '(1 2 3)]
-  (print ".")
-  (recur (rest nums)))
+(defn get-senders [msgs]
+  (loop [unprocessed msgs
+         senders []]
+    (if (empty? unprocessed)
+      senders
+      (do 
+        (print ".")
+        (recur (rest unprocessed)
+               (cons (get-sender (first unprocessed)) senders))))))
 
 (defn senders-map [msgs]
   (reduce (fn [dict sender-addr]
@@ -37,6 +35,17 @@
               (inc (get dict sender-addr 0))))
           {}
           (get-senders msgs)))
+
+(defn pretty-print [sender msgs]
+  (print (format "%s:\n" sender))
+  (doseq [msg msgs] (print "\t" (get-subject msg) "\n")))
+
+(defn show-messages-by-sender [msgs]
+  (let [msgs-by-sender (group-by get-sender msgs)]
+    (doseq [[sender msgs] msgs-by-sender]
+      (pretty-print sender msgs))))
+
+
 
 (defn -main
   "I don't do a whole lot ... yet."
